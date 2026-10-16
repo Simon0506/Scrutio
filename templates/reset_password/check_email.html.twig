@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Vérifiez votre boite email | SCRUTIO{% endblock %}
+
+{% block body %}
+    <main class="auth-shell">
+        <p class="eyebrow">Espace analyste</p>
+        <h1>Vérifiez votre boite email</h1>
+        <p class="intro-copy">Si un compte correspond à cette adresse, un lien de réinitialisation vient d’être envoyé.</p>
+        <p class="auth-note">Le lien expire dans {{ resetToken.expirationMessageKey|trans(resetToken.expirationMessageData, 'ResetPasswordBundle') }}.</p>
+        <a class="account-help-link" href="{{ path('app_forgot_password_request') }}">Demander un nouveau lien</a>
+    </main>
+{% endblock %}

@@ -1,0 +1,10 @@
+<p class="paper-kicker">{{ content.sender }}</p>
+<h2>{{ title }}</h2>
+<dl class="letter-details">
+    <dt>À</dt><dd data-selectable role="button" tabindex="0" aria-pressed="false">{{ content.recipient }}</dd>
+    <dt>Date</dt><dd data-selectable role="button" tabindex="0" aria-pressed="false">{{ content.date }}</dd>
+    <dt>Objet</dt><dd data-selectable role="button" tabindex="0" aria-pressed="false">{{ content.subject }}</dd>
+</dl>
+{% for paragraph in content.paragraphs %}
+    <p class="document-prose" data-selectable role="button" tabindex="0" aria-pressed="false">{{ paragraph }}</p>
+{% endfor %}

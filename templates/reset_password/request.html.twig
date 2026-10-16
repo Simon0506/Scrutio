@@ -1,0 +1,25 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mot de passe oublié | SCRUTIO{% endblock %}
+
+{% block body %}
+    <header class="topbar">
+        <a class="wordmark" href="{{ path('case_index') }}"><span class="brand-mark" aria-hidden="true">S</span><span>SCRUTIO</span></a>
+        <span class="topbar-caption">Cabinet d’expertise documentaire</span>
+        <a class="account-nav-link" href="{{ path('app_login') }}">Connexion</a>
+    </header>
+
+    <main class="auth-shell">
+        <p class="eyebrow">Espace analyste</p>
+        <h1>Mot de passe oublié</h1>
+        {% for flash_error in app.flashes('reset_password_error') %}
+            <p class="auth-error" role="alert">{{ flash_error }}</p>
+        {% endfor %}
+        <p class="intro-copy">Saisissez votre adresse email. Si elle correspond à un compte, un lien de réinitialisation vous sera envoyé.</p>
+
+        {{ form_start(requestForm, {attr: {class: 'auth-form'}}) }}
+            {{ form_row(requestForm.email, {label: 'Adresse email'}) }}
+            <button class="primary-action" type="submit">Envoyer le lien</button>
+        {{ form_end(requestForm) }}
+    </main>
+{% endblock %}

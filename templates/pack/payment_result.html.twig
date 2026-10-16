@@ -1,0 +1,29 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Paiement du pack | SCRUTIO{% endblock %}
+
+{% block body %}
+    <header class="topbar">
+        <a class="wordmark" href="{{ path('case_index') }}">
+            <span class="brand-mark" aria-hidden="true">S</span>
+            <span>SCRUTIO</span>
+        </a>
+        <span class="topbar-caption">Cabinet d’expertise documentaire</span>
+        <a class="account-nav-link" href="{{ path('case_index') }}">Registre des affaires</a>
+    </header>
+
+    <main class="auth-shell">
+        <p class="eyebrow">{{ purchase.pack.title }}</p>
+        {% if cancelled %}
+            <h1>Paiement interrompu</h1>
+            <p class="intro-copy">Aucun accès n’a été accordé. Vous pouvez reprendre l’achat depuis le registre des affaires.</p>
+        {% elseif purchase.status == constant('App\\Entity\\PackPurchase::STATUS_PAID') %}
+            <h1>Pack débloqué</h1>
+            <p class="intro-copy">Le paiement est confirmé. Les affaires du pack sont maintenant accessibles dans votre registre.</p>
+        {% else %}
+            <h1>Confirmation en cours</h1>
+            <p class="intro-copy">Nous attendons la confirmation sécurisée du paiement. L’accès sera activé dès réception, sans qu’il soit nécessaire de relancer le paiement.</p>
+        {% endif %}
+        <a class="primary-action" href="{{ path('case_index') }}">Retour au registre</a>
+    </main>
+{% endblock %}

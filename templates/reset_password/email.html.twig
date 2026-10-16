@@ -1,0 +1,9 @@
+<h1>Réinitialisation du mot de passe SCRUTIO</h1>
+
+<p>Pour choisir un nouveau mot de passe, ouvrez ce lien :</p>
+
+<a href="{{ url('app_reset_password', {token: resetToken.token}) }}">{{ url('app_reset_password', {token: resetToken.token}) }}</a>
+
+<p>Ce lien expire dans {{ resetToken.expirationMessageKey|trans(resetToken.expirationMessageData, 'ResetPasswordBundle') }}.</p>
+
+<p>SCRUTIO</p>

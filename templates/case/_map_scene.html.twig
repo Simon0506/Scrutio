@@ -1,0 +1,35 @@
+<svg class="journey-scenery" viewBox="0 0 1200 400" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <pattern id="grid-{{ free ? 'archives' : 'workshop' }}" width="32" height="32" patternUnits="userSpaceOnUse">
+            <path d="M32 0H0V32" fill="none" stroke="currentColor" stroke-width="0.5" opacity="0.25"/>
+        </pattern>
+    </defs>
+    <rect width="1200" height="400" fill="url(#grid-{{ free ? 'archives' : 'workshop' }})"/>
+    {% if free %}
+        <g fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M-40 130C170 20 270 170 460 90S720 10 900 90s220 0 340-50M-40 145C170 35 270 185 460 105S720 25 900 105s220 0 340-50" opacity="0.45"/>
+            <path d="M95 400V175L230 80h180l100 65h260l120-70h170M90 320h1000M560 0v120M770 145l150 255" stroke-dasharray="6 8" opacity="0.35"/>
+            <g opacity="0.7">
+                <path d="M130 95V50h95v45M120 50l58-30 57 30M150 95V65h18v30m20 0V65h18v30M115 100h125"/>
+                <path d="M525 90V35h130v55M515 35h150M545 45v35m25-35v35m25-35v35m25-35v35m25-35v35M515 95h150"/>
+                <path d="M960 115V60h100v55M950 60l60-30 60 30M980 115V80h20v35m20 0V80h20v35M945 120h130"/>
+                <path d="M350 345h85v35h-85zm10 0v-15h65v15M710 340h110v45H710zm15 0v-15h80v15"/>
+                <circle cx="310" cy="65" r="12"/><circle cx="335" cy="85" r="9"/><circle cx="860" cy="50" r="13"/>
+            </g>
+        </g>
+        <g fill="currentColor" font-family="Consolas, monospace" font-size="10" letter-spacing="0">
+            <text x="143" y="122">ÉTAT CIVIL</text><text x="555" y="118">ARCHIVES</text><text x="983" y="142">LE MOULIN</text>
+        </g>
+    {% else %}
+        <g fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M50 125h1100M50 300h1100M100 30v340M1100 30v340" stroke-dasharray="8 10" opacity="0.4"/>
+            <path d="M140 105V40h190v65m-200 0h210M170 90V55h130v35zm10-7 35-23 30 16 22-10 25 17M355 40h80v65h-80zm10 10h60m-60 12h60m-60 12h35"/>
+            <path d="M765 100V40h90v60m-100 0h110M780 50h60v35h-60zm100-10h85v60h-85zm15 15h55m-55 15h55m-55 15h35"/>
+            <circle cx="600" cy="73" r="35"/><circle cx="600" cy="73" r="18"/>
+            <path d="M600 26v12m0 70v12m-47-47h12m70 0h12m-80-33 9 9m49 49 9 9m0-66-9 9m-49 49-9 9M180 340h250v30H180zm25 30v22m200-22v22M785 340h230v30H785zm20 30v22m190-22v22"/>
+        </g>
+        <g fill="currentColor" font-family="Consolas, monospace" font-size="10" letter-spacing="0">
+            <text x="150" y="123">PROVENANCES / CERTIFICATS</text><text x="770" y="123">CONTRÔLES / RAPPORTS</text>
+        </g>
+    {% endif %}
+</svg>

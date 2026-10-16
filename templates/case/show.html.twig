@@ -1,0 +1,59 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ case.title }} | SCRUTIO{% endblock %}
+
+{% block body %}
+    <header class="topbar">
+        <a class="wordmark" href="{{ path('case_index') }}">
+            <span class="brand-mark" aria-hidden="true">S</span>
+            <span>SCRUTIO</span>
+        </a>
+        <span class="topbar-caption">Cabinet d’expertise documentaire</span>
+        <span class="topbar-status"><span class="status-dot" aria-hidden="true"></span> Dossier ouvert</span>
+        {% include 'partials/account_menu.html.twig' %}
+    </header>
+
+    <main class="case-workspace">
+        <a class="back-link" href="{{ path('case_index') }}"><span aria-hidden="true">←</span> Registre des affaires</a>
+
+        <header class="case-heading">
+            <div>
+                <p class="eyebrow">Mandat d’audit / {{ case.packTitle ? 'Pack ' ~ case.packTitle : 'Accès libre' }} / {{ case.difficulty }}</p>
+                <h1>{{ case.title }}</h1>
+                <p class="intro-copy">{{ case.synopsis }}</p>
+                <form class="start-investigation" action="{{ path('investigation_start', {slug: case.slug}) }}" method="post">
+                    <input type="hidden" name="_token" value="{{ csrf_token('start-case-' ~ case.slug) }}">
+                    <button class="primary-action" type="submit">Commencer l’inspection <span aria-hidden="true">→</span></button>
+                </form>
+            </div>
+            <div class="case-stamp" aria-label="Dossier en cours d’examen">
+                <strong>À examiner</strong>
+                <span>Priorité normale · {{ documents|length }} pièces jointes</span>
+            </div>
+        </header>
+
+        <section aria-labelledby="evidence-heading">
+            <div class="section-heading">
+                <div>
+                    <p class="section-label">Inventaire du dossier</p>
+                    <h2 id="evidence-heading">Pièces communiquées</h2>
+                </div>
+                <span class="inventory-count">{{ documents|length }} documents</span>
+            </div>
+
+            <div class="document-stack">
+                {% for document in documents %}
+                    <article class="evidence-sheet">
+                        <div class="document-index">
+                            <span>Pièce</span>
+                            <strong>{{ '%02d'|format(loop.index) }}</strong>
+                        </div>
+                        <div class="document-content">
+                            <h2>{{ document.title }}</h2>
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+        </section>
+    </main>
+{% endblock %}

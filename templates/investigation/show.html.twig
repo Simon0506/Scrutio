@@ -1,0 +1,207 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Inspection · {{ case.title }} | SCRUTIO{% endblock %}
+
+{% block body %}
+    <header class="topbar">
+        <a class="wordmark" href="{{ path('case_index') }}">
+            <span class="brand-mark" aria-hidden="true">S</span>
+            <span>SCRUTIO</span>
+        </a>
+        <span class="topbar-caption">Cabinet d’expertise documentaire</span>
+        <span class="topbar-status"><span class="status-dot" aria-hidden="true"></span> Session d’inspection</span>
+        {% include 'partials/account_menu.html.twig' %}
+    </header>
+
+    <main class="case-workspace inspection-workspace"
+          data-controller="investigation"
+          data-action="mouseup->investigation#captureSelection touchend->investigation#captureSelection click->investigation#selectZone keydown.enter->investigation#selectZone keydown.space->investigation#selectZone keydown.esc@window->investigation#closeNotebook resize@window->investigation#syncNotebookLayout"
+          data-investigation-mark-url-value="{{ path('investigation_add_anomaly', {token: investigation.publicToken}) }}"
+          {% if case.slug == 'heritage-valabregue' %}data-investigation-guide-key-value="scrutio.guide.v1.{{ investigation.publicToken }}"{% endif %}
+          data-investigation-csrf-token-value="{{ csrf_token('mark-anomaly-' ~ investigation.publicToken) }}">
+        <a class="back-link" href="{{ path('case_show', {slug: case.slug}) }}"><span aria-hidden="true">←</span> Briefing</a>
+
+        <header class="case-heading">
+            <div>
+                <p class="eyebrow">Session d’inspection / {{ case.difficulty }}</p>
+                <h1>{{ case.title }}</h1>
+                <p class="intro-copy">{{ case.synopsis }}</p>
+            </div>
+            <div class="case-stamp" aria-label="Session en cours">
+                <strong>En cours</strong>
+                <span>{{ documents|length }} pièces · {{ anomalies|length }} repérage{{ anomalies|length > 1 ? 's' : '' }}</span>
+            </div>
+        </header>
+
+        {% if case.slug == 'heritage-valabregue' %}
+            <section class="investigation-guide" aria-labelledby="guide-heading">
+                <div class="investigation-guide-heading">
+                    <h2 id="guide-heading">Premiers pas</h2>
+                    <button class="guide-toggle" type="button" aria-controls="guide-body" aria-expanded="true" data-investigation-target="guideToggle" data-action="investigation#toggleGuide">Masquer l’accompagnement</button>
+                </div>
+                <div id="guide-body" class="investigation-guide-body" data-investigation-target="guideBody">
+                    <span class="guide-step" data-investigation-target="guideStep">Étape 1 / 4</span>
+                    <p role="status" data-investigation-target="guideMessage">Commencez par lire les pièces. Repérez les dates, les personnes et la provenance des documents.</p>
+                </div>
+            </section>
+        {% endif %}
+
+        <button class="notebook-toggle secondary-action" type="button" aria-controls="analysis-notebook" aria-expanded="false" data-investigation-target="notebookToggle" data-action="investigation#toggleNotebook">
+            Carnet d’analyse <span class="notebook-proof-count" data-investigation-target="notebookProofCount" aria-live="polite">0</span>
+        </button>
+
+        <div class="inspection-layout">
+        <aside class="investigation-toolbar" id="analysis-notebook" aria-labelledby="mark-heading" data-investigation-target="notebook">
+            <div class="investigation-tool-heading notebook-heading">
+                <div>
+                <p class="section-label">Carnet d’analyse</p>
+                <h2 id="mark-heading">Qualifier un passage</h2>
+                </div>
+                <button class="notebook-close" type="button" aria-label="Fermer le carnet d’analyse" title="Fermer le carnet d’analyse" data-action="investigation#closeNotebook">×</button>
+            </div>
+            <div class="anomaly-builder">
+                <div class="investigation-field">
+                    <label for="anomaly-type">1. Choisissez le type d’anomalie</label>
+                    <select id="anomaly-type" data-investigation-target="anomalyType" data-action="change->investigation#changeAnomalyType">
+                        <option value="" selected>Choisissez un type d'anomalie</option>
+                        {% for type, label in anomalyTypes %}
+                            <option value="{{ type }}" data-description="{{ anomalyDescriptions[type] }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <p class="anomaly-description" aria-live="polite" data-investigation-target="anomalyDescription">Choisissez un type d'anomalie pour consulter sa définition et les éléments attendus.</p>
+                <button class="notebook-select secondary-action" type="button" data-action="investigation#closeNotebook">Sélectionner les preuves</button>
+                <p class="selection-message" aria-live="polite" data-investigation-target="selectionMessage">2. Cliquez sur un élément pour l’ajouter au repérage ; cliquez à nouveau pour le retirer.</p>
+                <ol class="evidence-draft-list" aria-label="Éléments du repérage" data-investigation-target="draftEvidenceList"></ol>
+                <button class="primary-action" type="button" data-investigation-target="submitAnomalyButton" data-action="investigation#submitAnomaly" disabled>Enregistrer le repérage</button>
+                <p class="investigation-status" role="status" data-investigation-target="status"></p>
+            </div>
+            <section class="anomaly-register" aria-labelledby="anomaly-list-heading">
+                <div class="section-heading">
+                    <h2 id="anomaly-list-heading">Repérages consignés</h2>
+                    <span class="inventory-count" data-investigation-target="anomalyCount">{{ anomalies|length }} repérage{{ anomalies|length > 1 ? 's' : '' }}</span>
+                </div>
+                <ul class="anomaly-list" aria-live="polite" data-investigation-target="anomalyList">
+                    {% for anomaly in anomalies %}
+                        <li class="anomaly-entry" data-anomaly-id="{{ anomaly.id }}">
+                            <div class="anomaly-entry-heading">
+                                <details class="anomaly-entry-details">
+                                    <summary><strong>{{ anomalyTypes[anomaly.type] }}</strong></summary>
+                                    <ol>
+                                        {% for evidence in anomaly.evidenceSelections %}
+                                            <li><span>{{ evidence.documentTitle }}</span><blockquote>{{ evidence.selectedText }}</blockquote></li>
+                                        {% endfor %}
+                                    </ol>
+                                </details>
+                                <button class="anomaly-remove" type="button" aria-label="Supprimer ce repérage" data-action="investigation#removeAnomaly" data-remove-url="{{ path('investigation_remove_anomaly', {token: investigation.publicToken, anomalyId: anomaly.id}) }}" data-csrf-token="{{ csrf_token('remove-anomaly-' ~ investigation.publicToken ~ '-' ~ anomaly.id) }}">Supprimer</button>
+                            </div>
+                        </li>
+                    {% else %}
+                        <li class="anomaly-empty">Aucun passage consigné pour le moment.</li>
+                    {% endfor %}
+                </ul>
+            </section>
+        </aside>
+
+        <div class="inspection-content">
+        <section aria-labelledby="evidence-heading">
+            <div class="section-heading">
+                <div>
+                    <p class="section-label">Inventaire du dossier</p>
+                    <h2 id="evidence-heading">Pièces communiquées</h2>
+                </div>
+                <span class="inventory-count">{{ documents|length }} documents</span>
+            </div>
+
+            <div class="comparison-toolbar">
+                <div>
+                    <p class="section-label">Analyse croisée</p>
+                    <h3>Comparer deux pièces</h3>
+                    <p>Placez deux documents côte à côte pour confronter les faits.</p>
+                </div>
+                <button class="secondary-action" type="button" aria-expanded="false" data-investigation-target="comparisonButton" data-action="investigation#toggleComparison">Ouvrir la comparaison</button>
+            </div>
+
+            <div class="comparison-controls" hidden data-investigation-target="comparisonControls">
+                <div class="comparison-select-field">
+                    <label for="comparison-left">Pièce de gauche</label>
+                    <select id="comparison-left" data-investigation-target="comparisonLeftSelect" data-action="change->investigation#updateComparison">
+                        {% for document in documents %}
+                            <option value="{{ document.id }}" {% if loop.index == 1 %}selected{% endif %}>{{ '%02d'|format(loop.index) }} · {{ document.title }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="comparison-select-field">
+                    <label for="comparison-right">Pièce de droite</label>
+                    <select id="comparison-right" data-investigation-target="comparisonRightSelect" data-action="change->investigation#updateComparison">
+                        {% for document in documents %}
+                            <option value="{{ document.id }}" {% if loop.index == 3 %}selected{% endif %}>{{ '%02d'|format(loop.index) }} · {{ document.title }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="comparison-stage" hidden data-investigation-target="comparisonStage" aria-label="Comparaison côte à côte">
+                <section class="comparison-pane" aria-labelledby="comparison-left-title">
+                    <h3 id="comparison-left-title" data-investigation-target="comparisonLeftTitle">Pièce de gauche</h3>
+                    <div data-investigation-target="comparisonLeftPane"></div>
+                </section>
+                <section class="comparison-pane" aria-labelledby="comparison-right-title">
+                    <h3 id="comparison-right-title" data-investigation-target="comparisonRightTitle">Pièce de droite</h3>
+                    <div data-investigation-target="comparisonRightPane"></div>
+                </section>
+            </div>
+
+            <div class="document-stack" data-investigation-target="documentStack">
+                {% for document in documents %}
+                    <article class="evidence-sheet" data-document-id="{{ document.id }}">
+                        <div class="document-index">
+                            <span>Pièce</span>
+                            <strong>{{ '%02d'|format(loop.index) }}</strong>
+                        </div>
+                        <div class="document-content">
+                            {% if document.template %}
+                                {% include document.template with {content: document.content, title: document.title, type: document.type} only %}
+                            {% else %}
+                                <p class="paper-kicker">{{ document.type }}</p>
+                                <h2>{{ document.title }}</h2>
+                                <p>Le format de cette pièce n’est pas encore pris en charge.</p>
+                            {% endif %}
+                            <button class="metadata-button" type="button" aria-expanded="false" aria-controls="metadata-{{ document.id }}" data-metadata-url="{{ path('investigation_metadata', {token: investigation.publicToken, documentId: document.id}) }}" data-action="investigation#toggleMetadata">Inspecter les métadonnées</button>
+                            <dl class="metadata-panel" id="metadata-{{ document.id }}" hidden data-investigation-target="metadataPanel"></dl>
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="audit-report" aria-labelledby="report-heading" {% if case.slug == 'heritage-valabregue' %}data-investigation-target="guideReportSection"{% endif %}>
+            <div class="section-heading">
+                <div>
+                    <p class="section-label">Restitution</p>
+                    <h2 id="report-heading">Rapport final</h2>
+                </div>
+            </div>
+            {% for message in app.flashes('report_error') %}
+                <p class="report-error" role="alert">{{ message }}</p>
+            {% endfor %}
+            {% if case.slug == 'heritage-valabregue' %}
+                <p class="guide-report" data-investigation-target="guideReport">Votre conclusion doit rester proportionnée aux preuves. Un doute ne suffit pas à établir une fraude. Vous pouvez remettre votre rapport même si votre examen reste incomplet.</p>
+            {% endif %}
+            <form action="{{ path('investigation_submit', {token: investigation.publicToken}) }}" method="post" class="audit-report-form">
+                <input type="hidden" name="_token" value="{{ csrf_token('submit-report-' ~ investigation.publicToken) }}">
+                <fieldset class="conclusion-fieldset">
+                    <legend>Conclusion de l’audit</legend>
+                    <div class="conclusion-options">
+                        <label><input type="radio" name="conclusion" value="authentic" required><span>Authentique</span></label>
+                        <label><input type="radio" name="conclusion" value="fraud_confirmed" required><span>Fraude avérée</span></label>
+                        <label><input type="radio" name="conclusion" value="inconclusive" required><span>Inconcluant</span></label>
+                    </div>
+                </fieldset>
+                <button class="primary-action" type="submit">Soumettre le rapport</button>
+            </form>
+        </section>
+        </div>
+        </div>
+    </main>
+{% endblock %}

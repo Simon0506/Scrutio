@@ -1,0 +1,23 @@
+<p class="paper-kicker">{{ content.office }} · {{ content.reference }}</p>
+<h2>{{ title }}</h2>
+<dl>
+    <div><dt>Date portée sur la pièce</dt><dd data-selectable role="button" tabindex="0" aria-pressed="false">{{ content.documentDate }}</dd></div>
+    <div><dt>Lieu</dt><dd data-selectable role="button" tabindex="0" aria-pressed="false">{{ content.place }}</dd></div>
+</dl>
+<div class="document-prose">
+    {% for clause in content.clauses %}
+        <p class="document-prose" data-selectable role="button" tabindex="0" aria-pressed="false">{{ clause }}</p>
+    {% endfor %}
+</div>
+{% if content.visualExcerpt is defined %}
+    <figure class="document-facsimile">
+        <figcaption>{{ content.visualExcerpt.caption }}</figcaption>
+        <div class="invoice-total-excerpt" data-selectable role="button" tabindex="0" aria-pressed="false" aria-label="{{ content.visualExcerpt.label }} : montant sous-jacent {{ content.visualExcerpt.underprint }}, montant superposé {{ content.visualExcerpt.overprint }}">
+            <span class="invoice-total-label">{{ content.visualExcerpt.label }}</span>
+            <span class="invoice-total-amounts">
+                <span class="invoice-total-underprint">{{ content.visualExcerpt.underprint }}</span>
+                <span class="invoice-total-overprint">{{ content.visualExcerpt.overprint }}</span>
+            </span>
+        </div>
+    </figure>
+{% endif %}

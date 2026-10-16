@@ -1,0 +1,58 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}SCRUTIO | Jeu d’enquête documentaire{% endblock %}
+
+{% block body %}
+    <header class="topbar home-topbar">
+        <a class="wordmark" href="{{ path('app_home') }}" aria-label="Scrutio, accueil">
+            <span class="brand-mark" aria-hidden="true">S</span>
+            <span>SCRUTIO</span>
+        </a>
+        <a class="account-nav-link home-register-link" href="{{ path('case_index') }}">Registre des affaires</a>
+        {% include 'partials/account_menu.html.twig' %}
+    </header>
+
+    <main class="home-page">
+        <section class="home-hero" aria-labelledby="home-title">
+            <div class="home-hero-inner">
+                <p class="eyebrow">Jeu d’enquête documentaire</p>
+                <h1 id="home-title">SCRUTIO</h1>
+                <p class="home-tagline">Les pièces parlent.<br>À vous de les faire concorder.</p>
+                <p class="home-intro">Un contrat, une lettre, une date qui détonne. Entrez dans la peau d’un expert documentaire : examinez les pièces, confrontez les indices et rendez votre verdict.</p>
+                <a class="primary-action home-cta" href="{{ path('case_index') }}">Ouvrir le registre des affaires <span aria-hidden="true">→</span></a>
+                <p class="home-access">Premières affaires en accès libre, sans inscription.</p>
+            </div>
+            <span class="home-hero-caption">Cabinet Scrutio / Expertise documentaire</span>
+        </section>
+
+        <section class="home-method" aria-labelledby="home-method-title">
+            <div class="home-section-heading">
+                <p class="eyebrow">Votre mission</p>
+                <h2 id="home-method-title">Une conviction ne suffit pas.<br>Il faut des preuves.</h2>
+                <p>Une incohérence n’est pas toujours une fraude. Une pièce manquante n’est pas une preuve de faux. Saurez-vous distinguer le doute du fait établi ?</p>
+            </div>
+            <ol class="home-steps">
+                <li>
+                    <span class="home-step-number" aria-hidden="true">01</span>
+                    <h3>Examinez les pièces</h3>
+                    <p>Parcourez le dossier. Lisez les documents et observez les détails qui pourraient changer votre lecture de l’affaire.</p>
+                </li>
+                <li>
+                    <span class="home-step-number" aria-hidden="true">02</span>
+                    <h3>Confrontez les indices</h3>
+                    <p>Croisez les sources et relevez les passages qui étayent vos constats. Chaque anomalie doit pouvoir se justifier.</p>
+                </li>
+                <li>
+                    <span class="home-step-number" aria-hidden="true">03</span>
+                    <h3>Rendez votre conclusion</h3>
+                    <p>Authentique, fraude avérée ou inconcluant : remettez votre rapport, puis confrontez votre analyse à la correction.</p>
+                </li>
+            </ol>
+        </section>
+
+        <footer class="home-footer">
+            <span class="wordmark">SCRUTIO</span>
+            <a class="account-nav-link" href="{{ path('case_index') }}">Consulter les affaires <span aria-hidden="true">→</span></a>
+        </footer>
+    </main>
+{% endblock %}

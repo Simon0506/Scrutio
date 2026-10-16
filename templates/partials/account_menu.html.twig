@@ -1,0 +1,9 @@
+<nav class="account-menu" aria-label="Compte joueur">
+    {% if app.user %}
+        <span class="account-identity">{{ app.user.playerProfile.displayName ?? app.user.userIdentifier }}</span>
+        <a class="account-nav-link" href="{{ path('app_logout') }}">Déconnexion</a>
+    {% else %}
+        <a class="account-nav-link" href="{{ path('app_login') }}">Connexion</a>
+        <a class="account-nav-link account-register-link" href="{{ path('app_register') }}">Créer un compte</a>
+    {% endif %}
+</nav>

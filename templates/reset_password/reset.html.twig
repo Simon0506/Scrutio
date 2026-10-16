@@ -1,0 +1,18 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Réinitialiser le mot de passe | SCRUTIO{% endblock %}
+
+{% block body %}
+    <main class="auth-shell">
+        <p class="eyebrow">Espace analyste</p>
+        <h1>Choisir un nouveau mot de passe</h1>
+        {% for flash_error in app.flashes('reset_password_error') %}
+            <p class="auth-error" role="alert">{{ flash_error }}</p>
+        {% endfor %}
+
+        {{ form_start(resetForm, {attr: {class: 'auth-form'}}) }}
+            {{ form_row(resetForm.plainPassword, {label: 'Nouveau mot de passe'}) }}
+            <button class="primary-action" type="submit">Enregistrer le mot de passe</button>
+        {{ form_end(resetForm) }}
+    </main>
+{% endblock %}

@@ -1,0 +1,38 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Connexion | SCRUTIO{% endblock %}
+
+{% block body %}
+    <header class="topbar">
+        <a class="wordmark" href="{{ path('case_index') }}">
+            <span class="brand-mark" aria-hidden="true">S</span>
+            <span>SCRUTIO</span>
+        </a>
+        <span class="topbar-caption">Cabinet d’expertise documentaire</span>
+        <a class="account-nav-link" href="{{ path('app_register') }}">Créer un compte</a>
+    </header>
+
+    <main class="auth-shell">
+        <p class="eyebrow">Espace analyste</p>
+        <h1>Connexion</h1>
+        <p class="intro-copy">Retrouvez vos dossiers et votre progression.</p>
+
+        {% for message in app.flashes('registration_success') %}
+            <p class="auth-success" role="status">{{ message }}</p>
+        {% endfor %}
+        {% for message in app.flashes('auth_error') %}
+            <p class="auth-error" role="alert">{{ message }}</p>
+        {% endfor %}
+        {% if error %}<p class="auth-error" role="alert">{{ error }}</p>{% endif %}
+
+        <form class="auth-form" action="{{ path('app_login') }}" method="post">
+            <label for="login-email">Adresse email</label>
+            <input id="login-email" type="email" name="_username" value="{{ lastUsername }}" autocomplete="email" required autofocus>
+            <label for="login-password">Mot de passe</label>
+            <input id="login-password" type="password" name="_password" autocomplete="current-password" required>
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+            <button class="primary-action" type="submit">Se connecter</button>
+        </form>
+        <a class="account-help-link" href="{{ path('app_forgot_password_request') }}">Mot de passe oublié ?</a>
+    </main>
+{% endblock %}

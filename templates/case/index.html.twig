@@ -1,0 +1,104 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Registre des affaires | SCRUTIO{% endblock %}
+
+{% block body %}
+    <header class="topbar">
+        <a class="wordmark" href="{{ path('app_home') }}" aria-label="Scrutio, accueil">
+            <span class="brand-mark" aria-hidden="true">S</span>
+            <span>SCRUTIO</span>
+        </a>
+        <span class="topbar-caption">Cabinet d’expertise documentaire</span>
+        <span class="topbar-status"><span class="status-dot" aria-hidden="true"></span> Bureau opérationnel</span>
+        {% include 'partials/account_menu.html.twig' %}
+    </header>
+
+    <main class="catalog">
+        <p class="eyebrow">Registre des affaires</p>
+        <h1>Votre parcours d’expert.</h1>
+        <p class="intro-copy">Des premiers indices aux expertises les plus complexes. Chaque affaire validée ouvre la suivante.</p>
+        {% for message in app.flashes('payment_error') %}
+            <p class="report-error" role="alert">{{ message }}</p>
+        {% endfor %}
+
+        {% for message in app.flashes('progression') %}
+            <p class="report-error" role="status">{{ message }}</p>
+        {% endfor %}
+        {% for journey in journeys %}
+            <section class="journey-section {{ journey.free ? 'journey-archives' : 'journey-workshop' }}" aria-labelledby="journey-{{ journey.slug }}">
+                <header class="journey-heading">
+                    <div>
+                        <p class="section-label">{{ journey.free ? 'Parcours découverte · Accès libre' : 'Pack thématique' }}</p>
+                        <h2 id="journey-{{ journey.slug }}">{{ journey.title }}</h2>
+                        <p class="journey-description">{{ journey.description }}</p>
+                    </div>
+                    <div class="journey-progress">
+                        <strong>{{ journey.completed }} <span>/ {{ journey.cases|length }}</span></strong>
+                        <span>expertise{{ journey.completed > 1 ? 's' : '' }} validée{{ journey.completed > 1 ? 's' : '' }}</span>
+                        <progress max="{{ journey.cases|length }}" value="{{ journey.completed }}" aria-label="Progression : {{ journey.title }}">{{ journey.completed }}/{{ journey.cases|length }}</progress>
+                    </div>
+                </header>
+                <div class="journey-map" style="--node-count: {{ journey.cases|length }}">
+                    {% include 'case/_map_scene.html.twig' with {free: journey.free} only %}
+                    <span class="journey-map-label">{{ journey.free ? 'Les archives du bourg' : journey.title }}</span>
+                    <ol class="journey-nodes" aria-label="Affaires par complexité croissante">
+                        {% for case in journey.cases %}
+                            {% set passed = case.result.passed ?? false %}
+                            <li class="journey-node {{ passed ? 'is-complete' : (case.unlocked ? 'is-current' : 'is-locked') }}">
+                                {% if case.unlocked %}
+                                    <a class="journey-stop" href="{{ path('case_show', {slug: case.slug}) }}" aria-label="Niveau {{ loop.index }} : {{ case.title }}{{ passed ? ', expertise validée' : ', disponible' }}">
+                                        <span class="journey-pin" aria-hidden="true">{{ passed ? '✓' : '%02d'|format(loop.index) }}</span>
+                                        <span class="journey-level">Niveau {{ loop.index }} · {{ case.difficulty }}</span>
+                                        <h3>{{ case.title }}</h3>
+                                    </a>
+                                {% else %}
+                                    <div class="journey-stop" aria-disabled="true">
+                                        <span class="journey-pin" aria-hidden="true">{{ '%02d'|format(loop.index) }}</span>
+                                        <span class="journey-level">Niveau {{ loop.index }} · {{ case.difficulty }}</span>
+                                        <h3>{{ case.title }}</h3>
+                                    </div>
+                                {% endif %}
+                                <span class="journey-node-state">{{ passed ? 'Expertise validée' : (case.unlocked ? 'Disponible' : 'Verrouillé') }}</span>
+                                <p class="journey-node-detail">
+                                    {% if not journey.owned %}
+                                        Pack à débloquer{{ case.previousTitle ? ', puis valider « ' ~ case.previousTitle ~ ' »' : '' }}.
+                                    {% elseif not case.unlocked %}
+                                        Validez « {{ case.previousTitle }} ».
+                                    {% elseif case.result %}
+                                        Meilleur score : {{ case.result.score }}/{{ case.result.maximum }}
+                                    {% else %}
+                                        {{ case.documentCount }} pièces à examiner
+                                    {% endif %}
+                                </p>
+                            </li>
+                        {% endfor %}
+                    </ol>
+                </div>
+                <div class="journey-bottom">
+                    <p>{{ journey.free ? 'Découverte' : 'Approfondissement' }} <span aria-hidden="true">→</span> Complexité croissante</p>
+                    {% if not journey.owned %}
+                        <div class="journey-purchase">
+                            <span class="journey-price">{{ (journey.priceAmountInCents / 100)|number_format(2, ',', ' ') }} {{ journey.currency == 'EUR' ? '€' : journey.currency }} <small>· Achat unique</small></span>
+                            {% if app.user %}
+                                {% if stripeConfigured %}
+                                    <form action="{{ path('pack_purchase_stripe', {slug: journey.slug}) }}" method="post" data-turbo="false">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('buy-pack-' ~ journey.slug) }}">
+                                        <button class="primary-action" type="submit">Débloquer ce pack</button>
+                                    </form>
+                                {% else %}
+                                    <span class="pack-payment-unavailable">Paiement en cours de configuration.</span>
+                                {% endif %}
+                            {% else %}
+                                <a class="account-nav-link" href="{{ path('app_login') }}">Se connecter pour acheter <span aria-hidden="true">→</span></a>
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        <span class="journey-access">{{ journey.free ? 'Sans inscription' : 'Pack débloqué' }}</span>
+                    {% endif %}
+                </div>
+            </section>
+        {% else %}
+            <p class="empty-state">Les premières affaires arrivent bientôt.</p>
+        {% endfor %}
+    </main>
+{% endblock %}

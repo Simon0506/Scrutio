@@ -1,0 +1,133 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Résultat · {{ case.title }} | SCRUTIO{% endblock %}
+
+{% block body %}
+    <header class="topbar">
+        <a class="wordmark" href="{{ path('case_index') }}">
+            <span class="brand-mark" aria-hidden="true">S</span>
+            <span>SCRUTIO</span>
+        </a>
+        <span class="topbar-caption">Cabinet d’expertise documentaire</span>
+        <span class="topbar-status"><span class="status-dot" aria-hidden="true"></span> Rapport rendu</span>
+        {% include 'partials/account_menu.html.twig' %}
+    </header>
+
+    <main class="case-workspace result-workspace">
+        <a class="back-link" href="{{ path('case_index') }}"><span aria-hidden="true">←</span> Registre des affaires</a>
+        <header class="case-heading">
+            <div>
+                <p class="eyebrow">Résultat de l’audit / {{ case.difficulty }}</p>
+                <h1>{{ case.title }}</h1>
+                <p class="intro-copy">Votre rapport a été évalué selon les éléments consignés pendant l’inspection.</p>
+            </div>
+            <div class="result-stamps">
+                <div class="expertise-stamp {{ score.passed ? 'is-passed' : 'is-failed' }}" role="img" aria-label="{{ score.passed ? 'Expertise validée' : 'Expertise non validée' }}">
+                    <strong>{{ score.passed ? 'VALIDÉE' : 'NON VALIDÉE' }}</strong>
+                </div>
+                <div class="score-stamp" aria-label="Score obtenu">
+                    <strong>{{ score.score }}<span>/{{ score.maximum }}</span></strong>
+                    <span>Score d’audit</span>
+                    <span class="best-score">Meilleur : {{ bestScore }}/{{ score.maximum }}</span>
+                </div>
+            </div>
+        </header>
+
+        <section class="result-section" aria-labelledby="submitted-report-heading">
+            <p class="section-label">{{ score.passed ? 'Expertise validée' : 'Expertise non validée' }}</p>
+            <h2 id="submitted-report-heading">{{ conclusionLabels[submission.conclusion] ?? submission.conclusion }}</h2>
+            <p class="result-threshold">{{ score.conclusion.correct ? 'Conclusion correcte' : 'Conclusion incorrecte' }} · Seuil de validation : {{ score.minimumPassingScore }} points</p>
+        </section>
+
+        <section class="result-section" aria-labelledby="score-breakdown-heading">
+            <p class="section-label">Évaluation déterministe</p>
+            <h2 id="score-breakdown-heading">Détail du score</h2>
+            <dl class="score-breakdown">
+                <div>
+                    <dt>Conclusion</dt>
+                    <dd>{{ score.conclusion.earned }} / {{ score.conclusion.possible }}{% if score.conclusion.correct %} · correcte{% else %} · à revoir{% endif %}</dd>
+                </div>
+                <div>
+                    <dt>Anomalies identifiées</dt>
+                    <dd>{{ score.anomalies.earned }} / {{ score.anomalies.possible }} · {{ score.anomalies.found }} sur {{ score.anomalies.expected }}</dd>
+                </div>
+                <div>
+                    <dt>Fausses accusations</dt>
+                    <dd>{{ score.falseAccusations.count }} repérage{{ score.falseAccusations.count > 1 ? 's' : '' }} · −{{ score.falseAccusations.penalty }} points</dd>
+                </div>
+            </dl>
+        </section>
+
+        <section class="result-section" aria-labelledby="submitted-findings-heading">
+            <p class="section-label">Relecture des preuves</p>
+            <h2 id="submitted-findings-heading">Détail de vos repérages</h2>
+            {% if score.submittedAnomalies is empty %}
+                <p class="result-empty-findings">Aucun repérage n’a été consigné dans ce rapport.</p>
+            {% else %}
+                <ol class="submitted-findings">
+                    {% for anomaly in score.submittedAnomalies %}
+                        <li class="submitted-finding {{ anomaly.correct ? 'is-correct' : 'is-incorrect' }}">
+                            <div class="submitted-finding-heading">
+                                <div>
+                                    <span class="submitted-finding-verdict">{{ anomaly.correct ? 'Correct' : 'Incorrect' }}</span>
+                                    <h3>{{ anomalyLabels[anomaly.type] ?? anomaly.type }}</h3>
+                                </div>
+                                <strong class="submitted-finding-points">{{ anomaly.points > 0 ? '+' : '' }}{{ anomaly.points }} pts</strong>
+                            </div>
+                            {% if anomaly.evidence is not empty %}
+                                <ul class="submitted-finding-evidence">
+                                    {% for evidence in anomaly.evidence %}
+                                        <li>
+                                            <span>{{ evidence.documentTitle }}</span>
+                                            <blockquote>{{ evidence.selectedText }}</blockquote>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                            {% if score.passed %}
+                                {% if anomaly.explanation %}
+                                    <p class="submitted-finding-explanation">{{ anomaly.explanation }}</p>
+                                {% else %}
+                                    <p class="submitted-finding-explanation">Les éléments sélectionnés ne correspondent pas à un constat attendu.</p>
+                                {% endif %}
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+                </ol>
+            {% endif %}
+        </section>
+
+        {% if score.passed %}
+            <section class="result-section correction-section" aria-labelledby="correction-heading">
+                <details class="correction-disclosure">
+                    <summary id="correction-heading">Afficher la correction pédagogique</summary>
+                    <div class="correction-content">
+                        <h2>Conclusion attendue : {{ expectedConclusion }}</h2>
+                        {% for finding in officialFindings %}
+                            <p>{{ finding }}</p>
+                        {% endfor %}
+                        {% if metadataCaution %}<p class="correction-caution">{{ metadataCaution }}</p>{% endif %}
+                    </div>
+                </details>
+            </section>
+        {% endif %}
+
+        <nav class="result-actions" aria-label="Suite de l’expertise">
+            <form class="restart-investigation" action="{{ path('investigation_restart', {token: investigation.publicToken}) }}" method="post">
+                <input type="hidden" name="_token" value="{{ csrf_token('restart-investigation-' ~ investigation.publicToken) }}">
+                <button class="secondary-action" type="submit">Recommencer l’expertise</button>
+            </form>
+            {% if nextCase %}
+                {% if nextCase.unlocked %}
+                    <a class="primary-action" href="{{ path('case_show', {slug: nextCase.slug}) }}" title="{{ nextCase.title }}">Expertise suivante <span aria-hidden="true">→</span></a>
+                {% else %}
+                    <button class="primary-action" type="button" disabled aria-describedby="next-expertise-requirement">Expertise suivante <span aria-hidden="true">→</span></button>
+                {% endif %}
+            {% endif %}
+            <a class="secondary-action" href="{{ path('case_index') }}">Registre des affaires</a>
+        </nav>
+        {% if nextCase and not nextCase.unlocked %}
+            <p class="result-next-hint" id="next-expertise-requirement">Validez cette expertise pour accéder à la suivante.</p>
+        {% endif %}
+    </main>
+{% endblock %}
