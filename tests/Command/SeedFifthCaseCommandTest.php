@@ -27,7 +27,12 @@ final class SeedFifthCaseCommandTest extends TestCase
         self::assertCount(2, $solution['expectedAnomalies']);
         self::assertSame('cross_document_inconsistency', $solution['expectedAnomalies'][0]['type']);
         self::assertSame('missing_evidence', $solution['expectedAnomalies'][1]['type']);
-        self::assertSame('cross_document_inconsistency', $solution['expectedAnomalies'][1]['acceptedVariants'][0]['type']);
+        self::assertSame(1, $solution['expectedAnomalies'][1]['minimumSelections']);
+        self::assertSame(1, $solution['expectedAnomalies'][1]['minimumDistinctDocuments']);
+        self::assertSame(
+            ['missing_evidence', 'cross_document_inconsistency'],
+            array_column($solution['expectedAnomalies'][1]['acceptedVariants'], 'type'),
+        );
     }
 
     public function testBothUnresolvedContradictionsSupportInconclusiveConclusion(): void
@@ -61,6 +66,31 @@ final class SeedFifthCaseCommandTest extends TestCase
         self::assertFalse($result['submittedAnomalies'][0]['correct']);
         self::assertSame(-10, $result['submittedAnomalies'][0]['points']);
         self::assertFalse($result['passed']);
+    }
+
+    public function testEitherSinglePassageCanSupportMissingEvidence(): void
+    {
+        foreach (
+            [
+                [4, 'avenant rectificatif signé en 2021'],
+                [9, 'ne figure pas parmi les pièces remises'],
+            ] as [$documentOrder, $keyword]
+        ) {
+            $case = $this->createCase();
+            $investigation = new InvestigationSession($case, bin2hex(random_bytes(24)));
+            $document = $this->documentAtOrder($case, $documentOrder);
+            $content = $document->getContent();
+            $passages = array_merge($content['clauses'] ?? $content['paragraphs'] ?? [], [$content['date'] ?? '', $content['documentDate'] ?? '']);
+            $matches = array_filter($passages, static fn(string $passage): bool => str_contains($passage, $keyword));
+            self::assertNotEmpty($matches);
+            $anomaly = new PlayerAnomaly($investigation, 'missing_evidence', null);
+            new PlayerEvidenceSelection($anomaly, $document, array_values($matches)[0], 1);
+
+            $result = (new ScoringService())->evaluate($investigation, 'inconclusive');
+
+            self::assertSame(1, $result['anomalies']['found']);
+            self::assertTrue($result['submittedAnomalies'][0]['correct']);
+        }
     }
 
     private function createCase(): CaseFile

@@ -1,9 +1,31 @@
-<p class="paper-kicker">{{ content.authority }} · {{ content.registerNumber }}</p>
-<h2>{{ title }}</h2>
-<dl>
-    <div><dt>Personne concernée</dt><dd data-selectable role="button" tabindex="0" aria-pressed="false">{{ content.fullName }}</dd></div>
-    <div><dt>Date de naissance</dt><dd data-selectable role="button" tabindex="0" aria-pressed="false">{{ content.dateOfBirth }}</dd></div>
-    <div><dt>Date du décès</dt><dd data-selectable role="button" tabindex="0" aria-pressed="false">{{ content.dateOfDeath }}</dd></div>
-    <div><dt>Lieu du décès</dt><dd data-selectable role="button" tabindex="0" aria-pressed="false">{{ content.placeOfDeath }}</dd></div>
-    <div><dt>Enregistrement</dt><dd data-selectable role="button" tabindex="0" aria-pressed="false">{{ content.registeredAt }}</dd></div>
-</dl>
+<article class="registry-document">
+    <header class="registry-letterhead">
+        <span class="registry-emblem" aria-hidden="true">ÉC</span>
+        <div>
+            <p class="registry-authority" data-selectable role="button" tabindex="0" aria-pressed="false">{{ content.authority }}</p>
+            <p class="registry-office">Registre des actes de l’état civil</p>
+        </div>
+        <div class="registry-reference">
+            <span>Année / acte</span>
+            <strong data-selectable role="button" tabindex="0" aria-pressed="false">{{ content.registerNumber }}</strong>
+        </div>
+    </header>
+    <div class="registry-rule" aria-hidden="true"></div>
+    <div class="registry-document-heading">
+        <p class="registry-kicker">Extrait du registre</p>
+        <h2>{{ title }}</h2>
+    </div>
+    <dl class="registry-record">
+        <div class="registry-record-name"><dt>Personne concernée</dt><dd data-selectable role="button" tabindex="0" aria-pressed="false">{{ content.fullName }}</dd></div>
+        <div><dt>Date de naissance</dt><dd data-selectable role="button" tabindex="0" aria-pressed="false">{{ content.dateOfBirth }}</dd></div>
+        <div><dt>Date du décès</dt><dd data-selectable role="button" tabindex="0" aria-pressed="false">{{ content.dateOfDeath }}</dd></div>
+        <div><dt>Lieu du décès</dt><dd data-selectable role="button" tabindex="0" aria-pressed="false">{{ content.placeOfDeath }}</dd></div>
+    </dl>
+    <footer class="registry-certification">
+        <div>
+            <span>Inscrit au registre le</span>
+            <strong data-selectable role="button" tabindex="0" aria-pressed="false">{{ content.registeredAt }}</strong>
+        </div>
+        <span class="registry-copy-mark">Extrait communiqué au dossier</span>
+    </footer>
+</article>

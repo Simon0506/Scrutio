@@ -31,6 +31,7 @@ final class InvestigationController extends AbstractController
     private const ANOMALY_TYPES = [
         'anachronism',
         'cross_document_inconsistency',
+        'missing_evidence',
         'graphic_forgery',
         'metadata_inconsistency',
     ];
@@ -194,7 +195,7 @@ final class InvestigationController extends AbstractController
             'anomalyDescriptions' => [
                 'anachronism' => 'Un fait impossible au regard d’une date vérifiable, par exemple une signature attribuée à une personne après son décès. Une pièce peut suffire.',
                 'cross_document_inconsistency' => 'Deux pièces donnent des informations incompatibles sur le même fait. Sélectionnez un passage probant dans chaque pièce.',
-                'missing_evidence' => 'Une pièce est annoncée dans un document mais absente du dossier transmis. Sélectionnez sa mention et le bordereau ou inventaire qui confirme son absence. Cela ne prouve ni qu’elle n’existe pas, ni une fraude.',
+                'missing_evidence' => 'Une pièce est annoncée mais absente du dossier transmis. Sélectionnez le passage qui l’annonce ou constate son absence. Cela ne prouve ni qu’elle n’existe pas, ni une fraude.',
                 'graphic_forgery' => 'Une altération visible du document : ajout, rature, retouche ou signature matériellement incohérente. Une date suspecte ou une contradiction de texte ne suffit pas à elle seule.',
                 'metadata_inconsistency' => 'Une donnée technique du fichier contredit le contexte établi. Une date de numérisation postérieure ne prouve pas que le document lui-même est faux.',
             ],
@@ -522,7 +523,7 @@ final class InvestigationController extends AbstractController
     private function anomalyRequirements(string $type): array
     {
         return match ($type) {
-            'cross_document_inconsistency', 'missing_evidence' => ['minimumSelections' => 2, 'minimumDistinctDocuments' => 2],
+            'cross_document_inconsistency' => ['minimumSelections' => 2, 'minimumDistinctDocuments' => 2],
             default => ['minimumSelections' => 1, 'minimumDistinctDocuments' => 1],
         };
     }

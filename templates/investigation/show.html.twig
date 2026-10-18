@@ -83,7 +83,7 @@
                 </div>
                 <ul class="anomaly-list" aria-live="polite" data-investigation-target="anomalyList">
                     {% for anomaly in anomalies %}
-                        <li class="anomaly-entry" data-anomaly-id="{{ anomaly.id }}">
+                        <li class="anomaly-entry" data-anomaly-id="{{ anomaly.id }}" data-anomaly-type="{{ anomaly.type }}">
                             <div class="anomaly-entry-heading">
                                 <details class="anomaly-entry-details">
                                     <summary><strong>{{ anomalyTypes[anomaly.type] }}</strong></summary>

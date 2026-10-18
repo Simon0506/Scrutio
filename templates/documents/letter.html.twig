@@ -1,10 +1,18 @@
-<p class="paper-kicker">{{ content.sender }}</p>
-<h2>{{ title }}</h2>
-<dl class="letter-details">
-    <dt>À</dt><dd data-selectable role="button" tabindex="0" aria-pressed="false">{{ content.recipient }}</dd>
-    <dt>Date</dt><dd data-selectable role="button" tabindex="0" aria-pressed="false">{{ content.date }}</dd>
-    <dt>Objet</dt><dd data-selectable role="button" tabindex="0" aria-pressed="false">{{ content.subject }}</dd>
-</dl>
-{% for paragraph in content.paragraphs %}
-    <p class="document-prose" data-selectable role="button" tabindex="0" aria-pressed="false">{{ paragraph }}</p>
-{% endfor %}
+<article class="letter-document">
+    <header class="letter-letterhead">
+        <div>
+            <p class="letter-sender" data-selectable role="button" tabindex="0" aria-pressed="false">{{ content.sender }}</p>
+            <p class="letter-recipient-label">Correspondance adressée à</p>
+            <p class="letter-recipient" data-selectable role="button" tabindex="0" aria-pressed="false">{{ content.recipient }}</p>
+        </div>
+        <p class="letter-date" data-selectable role="button" tabindex="0" aria-pressed="false">{{ content.date }}</p>
+    </header>
+    <div class="letter-rule" aria-hidden="true"></div>
+    <p class="letter-document-title">{{ title }}</p>
+    <p class="letter-subject"><span>Objet</span><strong data-selectable role="button" tabindex="0" aria-pressed="false">{{ content.subject }}</strong></p>
+    <div class="letter-body">
+        {% for paragraph in content.paragraphs %}
+            <p class="document-prose" data-selectable role="button" tabindex="0" aria-pressed="false">{{ paragraph }}</p>
+        {% endfor %}
+    </div>
+</article>

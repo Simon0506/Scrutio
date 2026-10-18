@@ -169,17 +169,30 @@ final class SeedFifthCaseCommand extends Command
                 [
                     'code' => 'missing_rectifying_amendment',
                     'type' => 'missing_evidence',
-                    'minimumSelections' => 2,
-                    'minimumDistinctDocuments' => 2,
+                    'minimumSelections' => 1,
+                    'minimumDistinctDocuments' => 1,
                     'expectedEvidence' => [
                         ['documentOrder' => 4, 'selectionKeywords' => ['avenant rectificatif signé en 2021']],
-                        ['documentOrder' => 9, 'selectionKeywords' => ['ne figure pas parmi les pièces remises']],
                     ],
-                    'acceptedVariants' => [[
-                        'type' => 'cross_document_inconsistency',
-                        'minimumSelections' => 2,
-                        'minimumDistinctDocuments' => 2,
-                    ]],
+                    'acceptedVariants' => [
+                        [
+                            'type' => 'missing_evidence',
+                            'minimumSelections' => 1,
+                            'minimumDistinctDocuments' => 1,
+                            'expectedEvidence' => [
+                                ['documentOrder' => 9, 'selectionKeywords' => ['ne figure pas parmi les pièces remises']],
+                            ],
+                        ],
+                        [
+                            'type' => 'cross_document_inconsistency',
+                            'minimumSelections' => 2,
+                            'minimumDistinctDocuments' => 2,
+                            'expectedEvidence' => [
+                                ['documentOrder' => 4, 'selectionKeywords' => ['avenant rectificatif signé en 2021']],
+                                ['documentOrder' => 9, 'selectionKeywords' => ['ne figure pas parmi les pièces remises']],
+                            ],
+                        ],
+                    ],
                     'explanation' => 'Les courriels annoncent un avenant rectificatif, tandis que le bordereau indique qu’il n’a pas été communiqué. Ce constat établit une lacune du dossier, pas l’inexistence de l’avenant ni une fraude. Son contenu et la portée de la reconnaissance de dette restent invérifiables.',
                 ],
             ],

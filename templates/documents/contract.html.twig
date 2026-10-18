@@ -1,23 +1,56 @@
-<p class="paper-kicker">{{ content.office }} · {{ content.reference }}</p>
-<h2>{{ title }}</h2>
-<dl>
-    <div><dt>Date portée sur la pièce</dt><dd data-selectable role="button" tabindex="0" aria-pressed="false">{{ content.documentDate }}</dd></div>
-    <div><dt>Lieu</dt><dd data-selectable role="button" tabindex="0" aria-pressed="false">{{ content.place }}</dd></div>
-</dl>
-<div class="document-prose">
+{% set manuscript = type in ['Testament', 'Codicille testamentaire', 'Acte manuscrit'] %}
+{% if manuscript %}
+<article class="contract-document is-manuscript">
+    <div class="manuscript-archive-label">
+        <span data-selectable role="button" tabindex="0" aria-pressed="false">{{ content.office }}</span>
+        <span data-selectable role="button" tabindex="0" aria-pressed="false">{{ content.reference }}</span>
+    </div>
+    <div class="manuscript-sheet">
+        <p class="manuscript-dateline">
+            <span data-selectable role="button" tabindex="0" aria-pressed="false">{{ content.place }}</span>, le
+            <span data-selectable role="button" tabindex="0" aria-pressed="false">{{ content.documentDate }}</span>
+        </p>
+        <h2 class="manuscript-title">{{ title }}</h2>
+        <div class="contract-clauses">
+            {% for clause in content.clauses %}
+                <p class="document-prose" data-selectable role="button" tabindex="0" aria-pressed="false">{{ clause }}</p>
+            {% endfor %}
+        </div>
+    </div>
+</article>
+{% else %}
+<article class="contract-document">
+    <header class="contract-letterhead">
+        <div>
+            <p class="contract-document-type">{{ type }}</p>
+            <p class="contract-office" data-selectable role="button" tabindex="0" aria-pressed="false">{{ content.office }}</p>
+        </div>
+        <div class="contract-reference">
+            <span>Référence</span>
+            <strong data-selectable role="button" tabindex="0" aria-pressed="false">{{ content.reference }}</strong>
+        </div>
+    </header>
+    <h2>{{ title }}</h2>
+    <dl class="contract-metadata">
+        <div><dt>Date portée sur la pièce</dt><dd data-selectable role="button" tabindex="0" aria-pressed="false">{{ content.documentDate }}</dd></div>
+        <div><dt>Lieu</dt><dd data-selectable role="button" tabindex="0" aria-pressed="false">{{ content.place }}</dd></div>
+    </dl>
+    <div class="contract-clauses">
     {% for clause in content.clauses %}
         <p class="document-prose" data-selectable role="button" tabindex="0" aria-pressed="false">{{ clause }}</p>
     {% endfor %}
-</div>
-{% if content.visualExcerpt is defined %}
-    <figure class="document-facsimile">
-        <figcaption>{{ content.visualExcerpt.caption }}</figcaption>
-        <div class="invoice-total-excerpt" data-selectable role="button" tabindex="0" aria-pressed="false" aria-label="{{ content.visualExcerpt.label }} : montant sous-jacent {{ content.visualExcerpt.underprint }}, montant superposé {{ content.visualExcerpt.overprint }}">
-            <span class="invoice-total-label">{{ content.visualExcerpt.label }}</span>
-            <span class="invoice-total-amounts">
-                <span class="invoice-total-underprint">{{ content.visualExcerpt.underprint }}</span>
-                <span class="invoice-total-overprint">{{ content.visualExcerpt.overprint }}</span>
-            </span>
-        </div>
-    </figure>
+    </div>
+    {% if content.visualExcerpt is defined %}
+        <figure class="document-facsimile">
+            <figcaption>{{ content.visualExcerpt.caption }}</figcaption>
+            <div class="invoice-total-excerpt" data-selectable role="button" tabindex="0" aria-pressed="false" aria-label="{{ content.visualExcerpt.label }} : montant sous-jacent {{ content.visualExcerpt.underprint }}, montant superposé {{ content.visualExcerpt.overprint }}">
+                <span class="invoice-total-label">{{ content.visualExcerpt.label }}</span>
+                <span class="invoice-total-amounts">
+                    <span class="invoice-total-underprint">{{ content.visualExcerpt.underprint }}</span>
+                    <span class="invoice-total-overprint">{{ content.visualExcerpt.overprint }}</span>
+                </span>
+            </div>
+        </figure>
+    {% endif %}
+</article>
 {% endif %}

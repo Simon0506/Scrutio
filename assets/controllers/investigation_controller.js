@@ -49,6 +49,8 @@ export default class extends Controller {
         this.notebookMediaChanged = () => this.syncNotebookLayout();
         this.notebookMedia.addEventListener('change', this.notebookMediaChanged);
         this.setNotebookOpen(false, false);
+        this.syncAnomalyTypeStyle();
+        this.syncSelectedZones();
         this.connectGuide();
     }
 
@@ -221,6 +223,7 @@ export default class extends Controller {
     }
 
     changeAnomalyType() {
+        this.syncAnomalyTypeStyle();
         const selectedOption = this.anomalyTypeTarget.selectedOptions[0];
         this.anomalyDescriptionTarget.textContent = selectedOption?.dataset.description
             ?? 'Choisissez un type pour consulter sa définition et les éléments attendus.';
@@ -233,18 +236,24 @@ export default class extends Controller {
         this.updateSelectionMessage();
     }
 
+    syncAnomalyTypeStyle() {
+        if (this.anomalyTypeTarget.value) {
+            this.element.dataset.anomalyType = this.anomalyTypeTarget.value;
+        } else {
+            delete this.element.dataset.anomalyType;
+        }
+    }
+
     minimumSelections() {
         return this.requiresDistinctDocuments() ? 2 : 1;
     }
 
     requiresDistinctDocuments() {
-        return ['cross_document_inconsistency', 'missing_evidence'].includes(this.anomalyTypeTarget.value);
+        return this.anomalyTypeTarget.value === 'cross_document_inconsistency';
     }
 
     distinctDocumentPrompt() {
-        return this.anomalyTypeTarget.value === 'missing_evidence'
-            ? 'Pour établir une pièce manquante, sélectionnez sa mention et le bordereau dans deux documents distincts.'
-            : 'Pour une incohérence croisée, choisissez un élément dans un autre document.';
+        return 'Pour une incohérence croisée, choisissez un élément dans un autre document.';
     }
 
     updateSelectionMessage() {
@@ -346,12 +355,52 @@ export default class extends Controller {
     }
 
     syncSelectedZones(root = this.element) {
+        const documentIds = new Map([...this.documentStackTarget.querySelectorAll('[data-document-id]')].map((document) => [
+            document.querySelector('.document-content h2')?.textContent.trim(),
+            Number(document.dataset.documentId),
+        ]));
+        const savedSelections = new Map();
+
+        this.anomalyListTarget.querySelectorAll('.anomaly-entry').forEach((entry) => {
+            const type = entry.dataset.anomalyType;
+            if (!type) {
+                return;
+            }
+
+            entry.querySelectorAll('.anomaly-entry-details ol li').forEach((evidence) => {
+                const documentTitle = evidence.querySelector('span')?.textContent.trim();
+                const documentId = documentIds.get(documentTitle);
+                const selectedText = evidence.querySelector('blockquote')?.textContent.trim();
+                if (documentId === undefined || !selectedText) {
+                    return;
+                }
+
+                const key = `${documentId}:${selectedText}`;
+                const types = savedSelections.get(key) ?? new Set();
+                types.add(type);
+                savedSelections.set(key, types);
+            });
+        });
+
         root.querySelectorAll('[data-selectable]').forEach((zone) => {
             const documentId = Number(zone.closest('[data-document-id]')?.dataset.documentId);
             const selectedText = zone.textContent.trim();
-            const selected = this.draftEvidence.some((evidence) => (
+            const key = `${documentId}:${selectedText}`;
+            const types = new Set(savedSelections.get(key) ?? []);
+            const draftSelected = this.draftEvidence.some((evidence) => (
                 evidence.documentId === documentId && evidence.selectedText === selectedText
             ));
+            if (draftSelected && this.anomalyTypeTarget.value) {
+                types.add(this.anomalyTypeTarget.value);
+            }
+
+            const selectedType = [...types].pop();
+            if (selectedType) {
+                zone.dataset.selectedAnomalyType = selectedType;
+            } else {
+                delete zone.dataset.selectedAnomalyType;
+            }
+            const selected = types.size > 0;
             zone.classList.toggle('is-selected', selected);
             zone.setAttribute('aria-pressed', String(selected));
         });
@@ -462,13 +511,6 @@ export default class extends Controller {
         });
     }
 
-    clearSelectedZone() {
-        this.element.querySelectorAll('[data-selectable].is-selected').forEach((zone) => {
-            zone.classList.remove('is-selected');
-            zone.setAttribute('aria-pressed', 'false');
-        });
-    }
-
     async submitAnomaly() {
         if (this.submitAnomalyButtonTarget.disabled) {
             return;
@@ -500,6 +542,7 @@ export default class extends Controller {
             const entry = document.createElement('li');
             entry.className = 'anomaly-entry';
             entry.dataset.anomalyId = result.id;
+            entry.dataset.anomalyType = this.anomalyTypeTarget.value;
 
             const entryHeading = document.createElement('div');
             entryHeading.className = 'anomaly-entry-heading';
@@ -542,8 +585,9 @@ export default class extends Controller {
             this.anomalyCountTarget.textContent = `${count} repérage${count > 1 ? 's' : ''}`;
             this.draftEvidence = [];
             this.renderDraftEvidence();
-            this.clearSelectedZone();
             this.anomalyTypeTarget.value = '';
+            this.syncAnomalyTypeStyle();
+            this.syncSelectedZones();
             this.updateSubmitAnomalyState();
             this.selectionMessageTarget.textContent = '1. Repérage enregistré. Choisissez le type du suivant.';
             this.statusTarget.textContent = '';
@@ -575,6 +619,7 @@ export default class extends Controller {
             }
 
             entry.remove();
+            this.syncSelectedZones();
             const count = this.anomalyListTarget.querySelectorAll('.anomaly-entry').length;
             this.anomalyCountTarget.textContent = `${count} repérage${count > 1 ? 's' : ''}`;
             if (count === 0) {

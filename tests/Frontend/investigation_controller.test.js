@@ -41,11 +41,12 @@ test('adapts evidence instructions to the selected anomaly type', () => {
     guide.renderGuide();
     assert.equal(guide.guideStepTarget.textContent, 'Étape 3 / 4');
     assert.match(guide.guideMessageTarget.textContent, /au moins un passage/);
-    for (const type of ['cross_document_inconsistency', 'missing_evidence']) {
-        guide.anomalyTypeTarget.value = type;
-        guide.renderGuide();
-        assert.match(guide.guideMessageTarget.textContent, /deux pièces distinctes/);
-    }
+    guide.anomalyTypeTarget.value = 'cross_document_inconsistency';
+    guide.renderGuide();
+    assert.match(guide.guideMessageTarget.textContent, /deux pièces distinctes/);
+    guide.anomalyTypeTarget.value = 'missing_evidence';
+    guide.renderGuide();
+    assert.match(guide.guideMessageTarget.textContent, /au moins un passage/);
     assert.equal(guide.highlights.get('is-guide-highlighted'), false);
 });
 
@@ -92,4 +93,103 @@ test('non-pilot investigations have no guide state and remain unaffected', () =>
     delete guide.guideState;
     assert.doesNotThrow(() => guide.renderGuide());
     assert.doesNotThrow(() => guide.recordGuideDocument(12));
+});
+
+test('syncs and clears the active anomaly type for type-specific evidence markers', () => {
+    const investigation = {
+        element: { dataset: {} },
+        anomalyTypeTarget: { value: '' },
+    };
+
+    for (const type of [
+        'anachronism',
+        'cross_document_inconsistency',
+        'missing_evidence',
+        'graphic_forgery',
+        'metadata_inconsistency',
+    ]) {
+        investigation.anomalyTypeTarget.value = type;
+        InvestigationController.prototype.syncAnomalyTypeStyle.call(investigation);
+        assert.equal(investigation.element.dataset.anomalyType, type);
+    }
+
+    investigation.anomalyTypeTarget.value = '';
+    InvestigationController.prototype.syncAnomalyTypeStyle.call(investigation);
+    assert.equal('anomalyType' in investigation.element.dataset, false);
+});
+
+test('keeps saved selections highlighted alongside a new draft and clears removed findings', () => {
+    const zone = (text) => {
+        const classes = new Set();
+        const attributes = new Map();
+        return {
+            textContent: text,
+            dataset: {},
+            closest: () => ({ dataset: { documentId: '7' } }),
+            classList: {
+                toggle(name, enabled) {
+                    if (enabled) classes.add(name);
+                    else classes.delete(name);
+                },
+                contains: (name) => classes.has(name),
+            },
+            setAttribute: (name, value) => attributes.set(name, value),
+            attributes,
+        };
+    };
+    const savedZone = zone('Saved passage');
+    const draftZone = zone('Draft passage');
+    const unusedZone = zone('Unused passage');
+    const evidence = {
+        querySelector(selector) {
+            return selector === 'span'
+                ? { textContent: 'Pièce 1' }
+                : { textContent: 'Saved passage' };
+        },
+    };
+    const savedEntry = {
+        dataset: { anomalyType: 'graphic_forgery' },
+        querySelectorAll: () => [evidence],
+    };
+    const investigation = {
+        element: { querySelectorAll: () => [savedZone, draftZone, unusedZone] },
+        anomalyListTarget: { querySelectorAll: () => [savedEntry] },
+        documentStackTarget: {
+            querySelectorAll: () => [{
+                dataset: { documentId: '7' },
+                querySelector: () => ({ textContent: 'Pièce 1' }),
+            }],
+        },
+        anomalyTypeTarget: { value: 'anachronism' },
+        draftEvidence: [{ documentId: 7, selectedText: 'Draft passage' }],
+    };
+
+    InvestigationController.prototype.syncSelectedZones.call(investigation);
+
+    assert.equal(savedZone.dataset.selectedAnomalyType, 'graphic_forgery');
+    assert.equal(savedZone.classList.contains('is-selected'), true);
+    assert.equal(savedZone.attributes.get('aria-pressed'), 'true');
+    assert.equal(draftZone.dataset.selectedAnomalyType, 'anachronism');
+    assert.equal(draftZone.classList.contains('is-selected'), true);
+    assert.equal(unusedZone.dataset.selectedAnomalyType, undefined);
+    assert.equal(unusedZone.classList.contains('is-selected'), false);
+
+    investigation.anomalyListTarget.querySelectorAll = () => [];
+    investigation.draftEvidence = [];
+    investigation.anomalyTypeTarget.value = '';
+    InvestigationController.prototype.syncSelectedZones.call(investigation);
+
+    assert.equal(savedZone.dataset.selectedAnomalyType, undefined);
+    assert.equal(savedZone.classList.contains('is-selected'), false);
+});
+
+test('requires one passage for missing evidence but two distinct documents for cross-document inconsistency', () => {
+    const investigation = controller();
+    investigation.anomalyTypeTarget.value = 'missing_evidence';
+    assert.equal(InvestigationController.prototype.minimumSelections.call(investigation), 1);
+    assert.equal(InvestigationController.prototype.requiresDistinctDocuments.call(investigation), false);
+
+    investigation.anomalyTypeTarget.value = 'cross_document_inconsistency';
+    assert.equal(InvestigationController.prototype.minimumSelections.call(investigation), 2);
+    assert.equal(InvestigationController.prototype.requiresDistinctDocuments.call(investigation), true);
 });
